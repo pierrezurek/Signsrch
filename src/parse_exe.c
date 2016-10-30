@@ -1,5 +1,5 @@
 /*
-    Copyright 2007-2013 Luigi Auriemma
+    Copyright 2007-2016 Luigi Auriemma
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -132,7 +132,7 @@ typedef struct {
     u8          *entrypoint;
     int         sections;
     int         sec_align;
-    u8          *image;
+    //u8          *image;
     int         image_size;
     int         bits;
     pe_section_t    *section;
@@ -444,13 +444,16 @@ int pe_parse_ELF32(parse_exe_t *pe, u8 *filemem, int filememsz, int full_parsing
         pe->section = calloc(sizeof(pe_section_t), pe->sections);
         if(!pe->section) return(-1);
 
+        // some ELF files have invalid sh_addralign
+        //    pe->section[i].VirtualAddress   = elf##X##sec[i].sh_addralign ? ((elf##X##sec[i].sh_addr + elf##X##sec[i].sh_addralign - 1) & ~(elf##X##sec[i].sh_addralign - 1)) : elf##X##sec[i].sh_addr;
+
         #define pe_elfsec(X) \
             strncpy(pe->section[i].Name, filemem + elf##X##sec[elf##X##hdr->e_shstrndx].sh_offset + elf##X##sec[i].sh_name, PARSE_EXE_SECNAMESZ); \
             pe->section[i].VirtualAddress   = elf##X##sec[i].sh_addr; \
             pe->section[i].VirtualSize      = elf##X##sec[i].sh_size; \
             pe->section[i].VirtualSize_off  = ((u8 *)&(elf##X##sec[i].sh_size)) - filemem; \
             pe->section[i].PointerToRawData = elf##X##sec[i].sh_offset; \
-            pe->section[i].SizeOfRawData    = elf##X##sec[i].sh_size; \
+            pe->section[i].SizeOfRawData    = (elf##X##sec[i].sh_type & 8) ? 0 : elf##X##sec[i].sh_size; \
             pe->section[i].Characteristics  = elf##X##sec[i].sh_flags;
 
 
@@ -661,21 +664,27 @@ int pe_parse_exe(parse_exe_t *pe, u8 *filemem, int filememsz, int full_parsing) 
         if(xsize == -1) xsize = filememsz;
 
         pe->image_size = xsize;
+        /*
         pe->image      = malloc(pe->image_size);
         if(!pe->image) STD_ERR;
         memcpy(pe->image, filemem, pe->image_size);
+        */
 
         for(i = 0; i < pe->sections; i++) {
             xsize = PARSE_EXE_MAX(pe->section[i].VirtualSize, pe->section[i].SizeOfRawData);
             t = pe->section[i].VirtualAddress + xsize;
             if(t > pe->image_size) {
+                /*
                 pe->image = realloc(pe->image, t);
                 if(!pe->image) STD_ERR;
                 memset(pe->image + pe->image_size, 0, t - pe->image_size);
+                */
                 pe->image_size = t;
             }
+            /*
             memset(pe->image + pe->section[i].VirtualAddress, 0, xsize);
             memcpy(pe->image + pe->section[i].VirtualAddress, filemem + pe->section[i].PointerToRawData, pe->section[i].SizeOfRawData);
+            */
         }
     }
 

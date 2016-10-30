@@ -1,5 +1,5 @@
 /*
-    Copyright 2007-2013 Luigi Auriemma
+    Copyright 2007-2016 Luigi Auriemma
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -65,7 +65,7 @@ typedef uint64_t    u64;
 
 
 
-#define VER                 "0.2.3"
+#define VER                 "0.2.4"
 #define STD_ERR             std_err()
 #define mystrdup            strdup
 #define PATHSZ              2000

@@ -36,41 +36,42 @@ u8  **filter_in_files   = NULL;
 
 
 int check_wildcard(u8 *fname, u8 *wildcard) {
-    u8      *f,
-            *w,
-            *a;
+    u8      *f      = fname,
+            *w      = wildcard,
+            *last_w = NULL,
+            *last_f = NULL;
 
-    if(!fname) return(-1);
-    if(!wildcard) return(-1);
-    f = fname;
-    w = wildcard;
-    a = NULL;
+    if(!fname) return -1;
+    if(!wildcard) return -1;
     while(*f || *w) {
-        if(!*w && !a) return(-1);
+        if(!*w && !last_w) return -1;
         if(*w == '?') {
             if(!*f) break;
             w++;
             f++;
         } else if(*w == '*') {
             w++;
-            a = w;
+            last_w = w;
+            last_f = f;
         } else {
             if(!*f) break;
             if(((*f == '\\') || (*f == '/')) && ((*w == '\\') || (*w == '/'))) {
                 f++;
                 w++;
             } else if(tolower(*f) != tolower(*w)) {
-                if(!a) return(-1);
+                if(!last_w) return -1;
+                w = last_w;
+                if(last_f) f = last_f;
                 f++;
-                w = a;
+                if(last_f) last_f = f;
             } else {
                 f++;
                 w++;
             }
         }
     }
-    if(*f || *w) return(-1);
-    return(0);
+    if(*f || *w) return -1;
+    return 0;
 }
 
 
